@@ -79,17 +79,8 @@ class Linkedin:
         # find the number of connections and generate no of iteration required
         raw_r = WebDriverWait(Linkedin.session, 20).until(
             EC.presence_of_element_located((By.XPATH, '//div[@class="search-results-container"]/div[1]')))
-        r = raw_r.text.split(' ')[0]
-        # TODO can we have this case 1,000 ? if so; needs to be done
-        r = math.ceil(int(r) / 10)
-        first_page = True
-        for i in range(r):
-            if first_page:
-                first_page = False
-                pass
-            else:
-                Linkedin.session.get(
-                    f'https://www.linkedin.com/search/results/people/?network=%5B%22F%22%5D&origin=MEMBER_PROFILE_CANNED_SEARCH&page={i + 1}')
+
+        while True:
             buttons = WebDriverWait(Linkedin.session, 20).until(
                 EC.presence_of_all_elements_located((By.XPATH, '//li[@class="reusable-search__result-container "]//button')))
 
@@ -97,14 +88,16 @@ class Linkedin:
 
                 time.sleep(2)
                 button.click()
-                time.sleep(random.randrange(0, 15))
+                time.sleep(random.randrange(10, 55))
 
                 # type in the message
                 type_message = WebDriverWait(Linkedin.session, 20).until(
                     EC.presence_of_element_located(
                         (By.XPATH, '//div[contains(@class, "msg-form__contenteditable")]/p')))
                 type_message.click()
-                type_message.send_keys(message)
+                for i in message:
+                    time.sleep(random.random() / 10)
+                    type_message.send_keys(i)
                 submit = WebDriverWait(Linkedin.session, 20).until(
                     EC.element_to_be_clickable((By.XPATH, '//button[contains(@class, "msg-form__send-button ")]')))
                 submit.click()
@@ -113,7 +106,15 @@ class Linkedin:
                 # close the hovered conversation box
                 message_button = WebDriverWait(Linkedin.session, 20).until(EC.element_to_be_clickable((By.XPATH, '//div[contains(@class, "msg-overlay-conversation-bubble")]/header/section[2]/button[2]')))
                 message_button.click()
-        print(f'Message sent successfully to {r} connected persons')
+
+            next_button = WebDriverWait(Linkedin.session, 20).until(EC.element_to_be_clickable((By.XPATH, '//button[@aria-label="Next"]')))
+            # click the next button if its clickable
+            if bool(next_button.get_attribute('disabled')):
+                break
+
+            next_button.click()
+
+        print(f'Message sent successfully')
 
     def __init__(self, username, password):
         self.username = username
