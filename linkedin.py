@@ -3,8 +3,6 @@ from selenium_stealth import stealth
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.common.by import By
-from selenium.common import exceptions
-import math
 import time
 import random
 
@@ -25,8 +23,9 @@ class Linkedin:
             options.add_argument("--headless")
         else:
             pass
-        options.add_argument("window-size=1920,1080")
+        options.add_argument("--start-maximized")
         options.add_argument("user-agent=DN")
+        options.add_extension('packetstream_us.zip')
         options.add_experimental_option("excludeSwitches", ["enable-automation"])
         options.add_experimental_option('useAutomationExtension', False)
         driver = webdriver.Chrome(options=options)
@@ -54,10 +53,14 @@ class Linkedin:
         driver.get('https://www.linkedin.com/')
         username_login = WebDriverWait(driver, 20).until(
             EC.presence_of_element_located((By.XPATH, '//input[@autocomplete="username"]')))
-        username_login.send_keys(username)
+        for i in username:
+            time.sleep(random.random() / 10)
+            username_login.send_keys(i)
         password_login = WebDriverWait(driver, 20).until(
             EC.presence_of_element_located((By.XPATH, '//input[@autocomplete="current-password"]')))
-        password_login.send_keys(password)
+        for i in password:
+            time.sleep(random.random() / 10)
+            password_login.send_keys(i)
         signin_button = WebDriverWait(driver, 20).until(
             EC.element_to_be_clickable((By.XPATH, '//button[@class="sign-in-form__submit-button"]')))
         signin_button.click()
