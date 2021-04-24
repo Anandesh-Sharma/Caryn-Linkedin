@@ -1,3 +1,5 @@
+import json
+
 from selenium import webdriver
 from selenium_stealth import stealth
 from selenium.webdriver.support.ui import WebDriverWait
@@ -5,6 +7,7 @@ from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.common.by import By
 import time
 import random
+import os
 
 
 class Linkedin:
@@ -51,20 +54,31 @@ class Linkedin:
         driver = Linkedin.get_browser(headless=False)
         print('Driver initialized successfully!')
         driver.get('https://www.linkedin.com/')
-        username_login = WebDriverWait(driver, 20).until(
-            EC.presence_of_element_located((By.XPATH, '//input[@autocomplete="username"]')))
-        for i in username:
-            time.sleep(random.random() / 10)
-            username_login.send_keys(i)
-        password_login = WebDriverWait(driver, 20).until(
-            EC.presence_of_element_located((By.XPATH, '//input[@autocomplete="current-password"]')))
-        for i in password:
-            time.sleep(random.random() / 10)
-            password_login.send_keys(i)
-        signin_button = WebDriverWait(driver, 20).until(
-            EC.element_to_be_clickable((By.XPATH, '//button[@class="sign-in-form__submit-button"]')))
-        signin_button.click()
-        print('Login Successfull!')
+        if not os.path.exists(f'{username}.json'):
+            username_login = WebDriverWait(driver, 20).until(
+                EC.presence_of_element_located((By.XPATH, '//input[@autocomplete="username"]')))
+            for i in username:
+                time.sleep(random.random() / 10)
+                username_login.send_keys(i)
+            password_login = WebDriverWait(driver, 20).until(
+                EC.presence_of_element_located((By.XPATH, '//input[@autocomplete="current-password"]')))
+            for i in password:
+                time.sleep(random.random() / 10)
+                password_login.send_keys(i)
+            signin_button = WebDriverWait(driver, 20).until(
+                EC.element_to_be_clickable((By.XPATH, '//button[@class="sign-in-form__submit-button"]')))
+            signin_button.click()
+            print('Login Successfull!')
+            with open(f'{username}.json', 'w') as f:
+                f.write(json.dumps(driver.get_cookies()))
+        else:
+            driver.delete_all_cookies()
+            for i in json.load(open(f'{username}.json')):
+                driver.add_cookie(i)
+            driver.refresh()
+            time.sleep(10)
+            print('Login Successfull using existing cookies!')
+
         Linkedin.session = driver
         return cls(username, password)
 
